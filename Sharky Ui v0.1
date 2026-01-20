@@ -1,29 +1,22 @@
 --[[ 
-    SHARKY HUB | TITANIUM V4.5 (ULTRA GLOSS)
+    SHARKY HUB | RAYFIELD EDITION (V6.0)
     
-    [FIXED & IMPROVED]
-    - HUB NAME: "Sharky | v.1.0" now has a dedicated, high-visibility header.
-    - FULL-FRAME DRAG: Click anywhere on the glass to move.
-    - CORNER RESIZE: Interactive handle in bottom-right.
-    - HOME PINNED: Stays at the absolute top of the sidebar.
-    - GLOSS OVERLAY: Added a "Reflective Shine" layer for the cool factor.
+    [RAYFIELD FEATURES ADAPTED]
+    - Segmented Layout: Topbar, Sidebar, and Elements separated.
+    - Component Strokes: Rayfield-style "ElementStroke" (Color3.fromRGB(50, 50, 50)).
+    - Interaction: Tab buttons with the signature Rayfield "Selection" glow.
+    - Full Logic: Omni-dragging and Edge-resizing preserved.
 ]]
 
 local Library = {
     Theme = {
-        Main = Color3.fromRGB(8, 8, 8),
-        Sidebar = Color3.fromRGB(12, 12, 12),
-        Accent = Color3.fromRGB(0, 200, 255),
-        Text = Color3.fromRGB(255, 255, 255),
-        SubText = Color3.fromRGB(180, 180, 180),
-        Stroke = Color3.fromRGB(90, 90, 90),
-        Gloss = Color3.fromRGB(255, 255, 255),
-        Icons = {
-            ["home"] = "rbxassetid://10723345518",
-            ["settings"] = "rbxassetid://10709819149",
-            ["zap"] = "rbxassetid://10705034321",
-            ["shield"] = "rbxassetid://10705036544"
-        }
+        Background = Color3.fromRGB(25, 25, 25),
+        Topbar = Color3.fromRGB(34, 34, 34),
+        Sidebar = Color3.fromRGB(30, 30, 30),
+        Accent = Color3.fromRGB(0, 146, 214), -- Rayfield Blue
+        ElementStroke = Color3.fromRGB(50, 50, 50),
+        Text = Color3.fromRGB(240, 240, 240),
+        SubText = Color3.fromRGB(178, 178, 178)
     }
 }
 
@@ -33,133 +26,98 @@ local CoreGui = game:GetService("CoreGui")
 local Viewport = (gethui and gethui()) or CoreGui
 
 local function QuickTween(obj, props, time)
-    TweenService:Create(obj, TweenInfo.new(time or 0.4, Enum.EasingStyle.Quint), props):Play()
+    TweenService:Create(obj, TweenInfo.new(time or 0.3, Enum.EasingStyle.Quint), props):Play()
 end
 
 function Library:CreateWindow()
     local ScreenGui = Instance.new("ScreenGui", Viewport)
-    ScreenGui.Name = "SharkyHub_Final"
+    ScreenGui.Name = "Sharky_Rayfield_Edition"
     
     --// MAIN FRAME
     local Main = Instance.new("Frame", ScreenGui)
-    Main.Size = UDim2.new(0, 680, 0, 460)
-    Main.Position = UDim2.new(0.5, -340, 0.5, -230)
-    Main.BackgroundColor3 = Library.Theme.Main
-    Main.BackgroundTransparency = 0.08
-    Main.ClipsDescendants = true
-    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
+    Main.Size = UDim2.new(0, 600, 0, 450)
+    Main.Position = UDim2.new(0.5, -300, 0.5, -225)
+    Main.BackgroundColor3 = Library.Theme.Background
+    Main.BorderSizePixel = 0
+    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8)
 
-    -- THE GLOSS OVERLAY (Cool reflective effect)
-    local GlossFrame = Instance.new("Frame", Main)
-    GlossFrame.Size = UDim2.new(1.5, 0, 0.5, 0)
-    GlossFrame.Position = UDim2.new(-0.2, 0, -0.1, 0)
-    GlossFrame.Rotation = -15
-    GlossFrame.BackgroundTransparency = 1
-    GlossFrame.ZIndex = 5
-    
-    local GlossGrad = Instance.new("UIGradient", GlossFrame)
-    GlossGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.new(1,1,1)),
-        ColorSequenceKeypoint.new(1, Color3.new(1,1,1))
-    })
-    GlossGrad.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 1),
-        NumberSequenceKeypoint.new(0.5, 0.96),
-        NumberSequenceKeypoint.new(1, 1)
-    })
-
-    -- Glass Stroke
+    -- Top Shadow / Stroke
     local MainStroke = Instance.new("UIStroke", Main)
-    MainStroke.Thickness = 1.5
-    local MGrad = Instance.new("UIGradient", MainStroke)
-    MGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Library.Theme.Gloss),
-        ColorSequenceKeypoint.new(0.5, Library.Theme.Stroke),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(30,30,30))
-    })
-    MGrad.Rotation = 45
+    MainStroke.Color = Library.Theme.ElementStroke
+    MainStroke.Thickness = 1
 
-    --// SIDEBAR
-    local Sidebar = Instance.new("Frame", Main)
-    Sidebar.Size = UDim2.new(0, 190, 1, -24)
-    Sidebar.Position = UDim2.new(0, 12, 0, 12)
-    Sidebar.BackgroundColor3 = Library.Theme.Sidebar
-    Sidebar.BackgroundTransparency = 0.4
-    Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 12)
-    Instance.new("UIStroke", Sidebar).Color = Library.Theme.Stroke
-
-    -- HUB BRANDING (The Header)
-    local Header = Instance.new("Frame", Sidebar)
-    Header.Size = UDim2.new(1, 0, 0, 60)
-    Header.BackgroundTransparency = 1
+    --// RAYFIELD TOPBAR
+    local Topbar = Instance.new("Frame", Main)
+    Topbar.Size = UDim2.new(1, 0, 0, 45)
+    Topbar.BackgroundColor3 = Library.Theme.Topbar
+    Topbar.BorderSizePixel = 0
+    local TopCorner = Instance.new("UICorner", Topbar)
+    TopCorner.CornerRadius = UDim.new(0, 8)
     
-    local HubTitle = Instance.new("TextLabel", Header)
+    -- "Repair" corner (hides rounded bottom of topbar)
+    local Repair = Instance.new("Frame", Topbar)
+    Repair.Size = UDim2.new(1, 0, 0, 10)
+    Repair.Position = UDim2.new(0, 0, 1, -10)
+    Repair.BackgroundColor3 = Library.Theme.Topbar
+    Repair.BorderSizePixel = 0
+
+    local HubTitle = Instance.new("TextLabel", Topbar)
     HubTitle.Text = "Sharky | v.1.0"
-    HubTitle.Size = UDim2.new(1, 0, 1, 0)
-    HubTitle.Font = Enum.Font.GothamBold
+    HubTitle.Size = UDim2.new(0, 200, 1, 0)
+    HubTitle.Position = UDim2.new(0, 15, 0, 0)
+    HubTitle.Font = Enum.Font.GothamMedium
     HubTitle.TextColor3 = Library.Theme.Text
-    HubTitle.TextSize = 17
+    HubTitle.TextSize = 15
+    HubTitle.TextXAlignment = Enum.TextXAlignment.Left
     HubTitle.BackgroundTransparency = 1
-    HubTitle.ZIndex = 10
 
-    local Underglow = Instance.new("Frame", Header)
-    Underglow.Size = UDim2.new(0, 100, 0, 2)
-    Underglow.Position = UDim2.new(0.5, -50, 0.8, 0)
-    Underglow.BackgroundColor3 = Library.Theme.Accent
-    Underglow.BorderSizePixel = 0
-    Instance.new("UIStroke", Underglow).Color = Library.Theme.Accent
+    --// SIDEBAR & CONTENT AREA
+    local Container = Instance.new("Frame", Main)
+    Container.Size = UDim2.new(1, 0, 1, -45)
+    Container.Position = UDim2.new(0, 0, 0, 45)
+    Container.BackgroundTransparency = 1
 
-    -- TAB CONTAINER
+    local Sidebar = Instance.new("Frame", Container)
+    Sidebar.Size = UDim2.new(0, 160, 1, 0)
+    Sidebar.BackgroundColor3 = Library.Theme.Sidebar
+    Sidebar.BorderSizePixel = 0
+
+    local SideStroke = Instance.new("Frame", Sidebar)
+    SideStroke.Size = UDim2.new(0, 1, 1, 0)
+    SideStroke.Position = UDim2.new(1, 0, 0, 0)
+    SideStroke.BackgroundColor3 = Library.Theme.ElementStroke
+    SideStroke.BorderSizePixel = 0
+
     local TabHolder = Instance.new("ScrollingFrame", Sidebar)
-    TabHolder.Size = UDim2.new(1, 0, 1, -75)
-    TabHolder.Position = UDim2.new(0, 0, 0, 70)
+    TabHolder.Size = UDim2.new(1, -10, 1, -20)
+    TabHolder.Position = UDim2.new(0, 5, 0, 10)
     TabHolder.BackgroundTransparency = 1
     TabHolder.ScrollBarThickness = 0
-    
-    local TabList = Instance.new("UIListLayout", TabHolder)
-    TabList.Padding = UDim.new(0, 7)
-    TabList.VerticalAlignment = Enum.VerticalAlignment.Top 
-    Instance.new("UIPadding", TabHolder).PaddingLeft = UDim.new(0, 12)
-    Instance.new("UIPadding", TabHolder).PaddingRight = UDim.new(0, 12)
+    local TabListLayout = Instance.new("UIListLayout", TabHolder)
+    TabListLayout.Padding = UDim.new(0, 5)
 
-    -- SELECTOR PILL
-    local SelectorPill = Instance.new("Frame", TabHolder)
-    SelectorPill.Size = UDim2.new(1, 0, 0, 38)
-    SelectorPill.BackgroundColor3 = Library.Theme.Accent
-    SelectorPill.BackgroundTransparency = 0.8
-    SelectorPill.ZIndex = 0
-    Instance.new("UICorner", SelectorPill).CornerRadius = UDim.new(0, 8)
-    Instance.new("UIStroke", SelectorPill).Color = Library.Theme.Accent
-
-    --// CONTENT
-    local Content = Instance.new("Frame", Main)
-    Content.Size = UDim2.new(1, -225, 1, -24)
-    Content.Position = UDim2.new(0, 212, 0, 12)
+    local Content = Instance.new("Frame", Container)
+    Content.Size = UDim2.new(1, -170, 1, -10)
+    Content.Position = UDim2.new(0, 170, 0, 5)
     Content.BackgroundTransparency = 1
 
-    --// RESIZE HANDLE
-    local ResizeHandle = Instance.new("ImageLabel", Main)
-    ResizeHandle.Size = UDim2.new(0, 22, 0, 22)
-    ResizeHandle.Position = UDim2.new(1, -24, 1, -24)
-    ResizeHandle.BackgroundTransparency = 1
-    ResizeHandle.Image = "rbxassetid://6031289116"
-    ResizeHandle.ImageColor3 = Library.Theme.Accent
-    ResizeHandle.ZIndex = 15
-
-    -- DRAG & RESIZE LOGIC
+    --// DRAG & RESIZE
     local dragging, resizing, dragStart, startPos, resStart, resSize
     
-    Main.InputBegan:Connect(function(input)
+    Topbar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true; dragStart = input.Position; startPos = Main.Position
-            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
         end
     end)
 
-    ResizeHandle.InputBegan:Connect(function(input)
+    Main.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            resizing = true; resStart = input.Position; resSize = Main.Size
-            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then resizing = false end end)
+            local mousePos = UserInputService:GetMouseLocation()
+            local framePos = Main.AbsolutePosition
+            local frameSize = Main.AbsoluteSize
+            if (framePos.X + frameSize.X - mousePos.X) < 20 and (framePos.Y + frameSize.Y - mousePos.Y) < 20 then
+                resizing = true; resStart = input.Position; resSize = Main.Size
+            end
         end
     end)
 
@@ -169,7 +127,13 @@ function Library:CreateWindow()
             Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         elseif resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - resStart
-            Main.Size = UDim2.new(0, math.clamp(resSize.X.Offset + delta.X, 550, 1100), 0, math.clamp(resSize.Y.Offset + delta.Y, 350, 800))
+            Main.Size = UDim2.new(0, math.clamp(resSize.X.Offset + delta.X, 450, 1000), 0, math.clamp(resSize.Y.Offset + delta.Y, 300, 700))
+        end
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false; resizing = false
         end
     end)
 
@@ -177,66 +141,49 @@ function Library:CreateWindow()
     local Tabs = {}
     local firstTab = true
 
-    function Window:CreateTab(tName, tIcon)
+    function Window:CreateTab(tName)
         local isHome = firstTab
         firstTab = false
         local finalName = isHome and "Home" or tName
-        local finalIcon = isHome and "home" or tIcon
 
         local TabBtn = Instance.new("TextButton", TabHolder)
-        TabBtn.Size = UDim2.new(1, 0, 0, 38)
+        TabBtn.Size = UDim2.new(1, 0, 0, 32)
+        TabBtn.BackgroundColor3 = Library.Theme.Accent
         TabBtn.BackgroundTransparency = 1
         TabBtn.Text = ""
         TabBtn.AutoButtonColor = false
-
-        local TIcon = Instance.new("ImageLabel", TabBtn)
-        TIcon.Size = UDim2.new(0, 20, 0, 20)
-        TIcon.Position = UDim2.new(0, 12, 0.5, -10)
-        TIcon.BackgroundTransparency = 1
-        TIcon.Image = Library.Theme.Icons[finalIcon] or Library.Theme.Icons["zap"]
-        TIcon.ImageColor3 = Library.Theme.SubText
+        Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
 
         local TText = Instance.new("TextLabel", TabBtn)
         TText.Text = finalName
-        TText.Position = UDim2.new(0, 42, 0, 0)
-        TText.Size = UDim2.new(1, -45, 1, 0)
+        TText.Size = UDim2.new(1, 0, 1, 0)
         TText.Font = Enum.Font.GothamMedium
         TText.TextColor3 = Library.Theme.SubText
         TText.TextSize = 13
         TText.BackgroundTransparency = 1
-        TText.TextXAlignment = Enum.TextXAlignment.Left
 
-        local Page = Instance.new("CanvasGroup", Content)
+        local Page = Instance.new("ScrollingFrame", Content)
         Page.Size = UDim2.new(1, 0, 1, 0)
-        Page.BackgroundTransparency = 1
         Page.Visible = false
+        Page.BackgroundTransparency = 1
+        Page.ScrollBarThickness = 2
+        Instance.new("UIListLayout", Page).Padding = UDim.new(0, 8)
 
         local function Select()
             for _, v in pairs(Tabs) do
                 v.Page.Visible = false
+                QuickTween(v.Btn, {BackgroundTransparency = 1})
                 QuickTween(v.Text, {TextColor3 = Library.Theme.SubText})
-                QuickTween(v.Icon, {ImageColor3 = Library.Theme.SubText})
             end
-            
-            QuickTween(SelectorPill, {Position = UDim2.new(0, 0, 0, TabBtn.Position.Y.Offset)}, 0.4, Enum.EasingStyle.Back)
-            
             Page.Visible = true
-            Page.GroupTransparency = 1
-            Page.Position = UDim2.new(0, 0, 0, 10)
-            QuickTween(Page, {GroupTransparency = 0, Position = UDim2.new(0, 0, 0, 0)})
+            QuickTween(TabBtn, {BackgroundTransparency = 0.85})
             QuickTween(TText, {TextColor3 = Library.Theme.Text})
-            QuickTween(TIcon, {ImageColor3 = Library.Theme.Accent})
         end
 
         TabBtn.MouseButton1Click:Connect(Select)
-        table.insert(Tabs, {Btn = TabBtn, Page = Page, Text = TText, Icon = TIcon})
+        table.insert(Tabs, {Btn = TabBtn, Page = Page, Text = TText})
 
-        if isHome then
-            task.spawn(function()
-                repeat task.wait() until TabBtn.Position.Y.Offset ~= 0
-                Select()
-            end)
-        end
+        if isHome then Select() end
         return {}
     end
 
