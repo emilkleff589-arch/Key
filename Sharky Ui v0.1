@@ -539,36 +539,37 @@ Tween(KeyFrame, {
         PagePad.PaddingRight = UDim.new(0, 2)
         PagePad.PaddingTop = UDim.new(0, 2)
 
-        -- Switch Logic
-       for _, t in pairs(Tabs) do
-    Tween(t.Btn, {BackgroundTransparency = 1}, 0.25)
-    Tween(t.Txt, {TextColor3 = Library.Theme.SubText}, 0.25)
-    Tween(t.Icon, {ImageColor3 = Library.Theme.SubText}, 0.25)
-    t.Page.Visible = false
-end
+      -- Switch Logic
+local function Activate()
 
-Tween(TabButton, {
-    BackgroundTransparency = 0,
-    Size = UDim2.new(1, -16, 0, 34)
-}, 0.18)
+    for _, t in pairs(Tabs) do
+        Tween(t.Btn, {BackgroundTransparency = 1}, 0.25)
+        Tween(t.Txt, {TextColor3 = Library.Theme.SubText}, 0.25)
+        Tween(t.Icon, {ImageColor3 = Library.Theme.SubText}, 0.25)
+        t.Page.Visible = false
+    end
 
-task.delay(0.18, function()
     Tween(TabButton, {
-        Size = UDim2.new(1, -20, 0, 32)
+        BackgroundTransparency = 0,
+        Size = UDim2.new(1, -16, 0, 34)
     }, 0.18)
-end)
 
-Tween(TitleLbl, {TextColor3 = Library.Theme.Text}, 0.25)
-Tween(IconImg, {ImageColor3 = Library.Theme.Accent}, 0.25)
+    task.delay(0.18, function()
+        Tween(TabButton, {
+            Size = UDim2.new(1, -20, 0, 32)
+        }, 0.18)
+    end)
 
-Page.Visible = true
-Page.CanvasPosition = Vector2.new(0,0)
+    Tween(TitleLbl, {TextColor3 = Library.Theme.Text}, 0.25)
+    Tween(IconImg, {ImageColor3 = Library.Theme.Accent}, 0.25)
 
-Page.Position = UDim2.new(0, 25, 0, 0)
-Tween(Page, {
-    Position = UDim2.new(0, 0, 0, 0)
-}, 0.35, Enum.EasingStyle.Quint)
-            end
+    Page.Visible = true
+    Page.CanvasPosition = Vector2.new(0,0)
+
+    Page.Position = UDim2.new(0, 25, 0, 0)
+    Tween(Page, {Position = UDim2.new(0, 0, 0, 0)}, 0.35, Enum.EasingStyle.Quint)
+
+end
             
             Tween(TabButton, {BackgroundColor3 = Color3.fromRGB(40,40,40)}, 0.3)
             Tween(TitleLbl, {TextColor3 = Library.Theme.Text}, 0.3)
