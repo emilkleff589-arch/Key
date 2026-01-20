@@ -18,6 +18,22 @@ local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local Mouse = Player:GetMouse()
 
+--// EXECUTOR & PLATFORM DETECTION
+local ExecutorName = "Unknown"
+local Platform = "PC"
+
+pcall(function()
+    ExecutorName = identifyexecutor()
+end)
+
+if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
+    Platform = "Mobile"
+end
+
+local function GetExecutorInfo()
+    return ExecutorName, Platform
+end
+
 --// PROTECT GUI
 local Viewport = nil
 pcall(function()
@@ -130,7 +146,8 @@ function Library:CreateWindow(Config)
     Config = Config or {}
     local TitleText = Config.Name or "Titanium UI"
     local VersionText = Config.Version or "v1.0.0"
-    local Executor = (identifyexecutor and identifyexecutor()) or "Unknown"
+    local Exec, Platform = GetExecutorInfo()
+    local Executor = Exec .. " | " .. Platform
 
     -- Instance Creation
     local ScreenGui = Instance.new("ScreenGui")
@@ -146,6 +163,46 @@ function Library:CreateWindow(Config)
     Main.BorderSizePixel = 0
     Main.Position = UDim2.new(0.5, -350, 0.5, -225)
     Main.Size = UDim2.new(0, 700, 0, 450)
+
+    --// RESIZE HANDLE
+local ResizeHandle = Instance.new("Frame")
+ResizeHandle.Parent = Main
+ResizeHandle.AnchorPoint = Vector2.new(1,1)
+ResizeHandle.Position = UDim2.new(1, -6, 1, -6)
+ResizeHandle.Size = UDim2.new(0, 12, 0, 12)
+ResizeHandle.BackgroundColor3 = Library.Theme.Accent
+ResizeHandle.ZIndex = 5
+
+Instance.new("UICorner", ResizeHandle).CornerRadius = UDim.new(1,0)
+
+local Resizing = false
+local StartSize, StartMouse
+
+ResizeHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        Resizing = true
+        StartSize = Main.Size
+        StartMouse = input.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if Resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local Delta = input.Position - StartMouse
+        Main.Size = UDim2.new(
+            StartSize.X.Scale,
+            math.clamp(StartSize.X.Offset + Delta.X, 550, 900),
+            StartSize.Y.Scale,
+            math.clamp(StartSize.Y.Offset + Delta.Y, 350, 650)
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        Resizing = false
+    end
+end)
     
     -- Styling
     local UICorner = Instance.new("UICorner")
@@ -395,7 +452,15 @@ function Library:CreateWindow(Config)
 
         KBtn.MouseButton1Click:Connect(function()
             if KInput.Text == KeyConfig.Key then
-                Tween(KeyFrame, {Size = UDim2.new(0,0,0,0), BackgroundTransparency = 1}, 0.5)
+            Tween(KeyFrame, {
+    Size = UDim2.new(0, 340, 0, 220),
+    BackgroundTransparency = 0
+}, 0.2)
+
+Tween(KeyFrame, {
+    Size = UDim2.new(0,0,0,0),
+    BackgroundTransparency = 1
+}, 0.45)
                 task.wait(0.5)
                 KeyFrame:Destroy()
                 Main.Visible = true
