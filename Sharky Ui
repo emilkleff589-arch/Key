@@ -1,98 +1,192 @@
--- ==================================================
--- SIMPLE UNIVERSAL UI LIBRARY (STARTER)
--- Works on most executors (PC + Mobile)
--- ==================================================
+-- ======================================================
+-- SHARKY HUB | ANIMATED KEY SYSTEM (UNIVERSAL)
+-- ======================================================
 
-local UILib = {}
-UILib.__index = UILib
-
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local UIS = game:GetService("UserInputService")
-
--- ==================================================
--- CREATE WINDOW
--- ==================================================
-function UILib:CreateWindow(config)
-    config = config or {}
-
-    local player = Players.LocalPlayer
-
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "UILib"
-    ScreenGui.ResetOnSpawn = false
-    ScreenGui.Parent = player:WaitForChild("PlayerGui")
-
-    local Main = Instance.new("Frame")
-    Main.Size = UDim2.fromOffset(520, 360)
-    Main.Position = UDim2.fromScale(0.5, 0.5)
-    Main.AnchorPoint = Vector2.new(0.5, 0.5)
-    Main.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-    Main.BorderSizePixel = 0
-    Main.Parent = ScreenGui
-
-    local UICorner = Instance.new("UICorner", Main)
-    UICorner.CornerRadius = UDim.new(0, 12)
-
-    local Top = Instance.new("Frame")
-    Top.Size = UDim2.new(1, 0, 0, 42)
-    Top.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    Top.BorderSizePixel = 0
-    Top.Parent = Main
-
-    local TopCorner = Instance.new("UICorner", Top)
-    TopCorner.CornerRadius = UDim.new(0, 12)
-
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, -20, 1, 0)
-    Title.Position = UDim2.fromOffset(10, 0)
-    Title.Text = config.Title or "Custom UI"
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.TextColor3 = Color3.new(1, 1, 1)
-    Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 16
-    Title.BackgroundTransparency = 1
-    Title.Parent = Top
-
-    -- Dragging
-    local dragging, dragInput, dragStart, startPos
-
-    Top.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = Main.Position
-
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
-    end)
-
-    Top.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-
-    UIS.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            Main.Position = UDim2.new(
-                startPos.X.Scale,
-                startPos.X.Offset + delta.X,
-                startPos.Y.Scale,
-                startPos.Y.Offset + delta.Y
-            )
-        end
-    end)
-
-    local Window = {}
-    Window.Tabs = {}
-
-    return Window
+if game:GetService("CoreGui"):FindFirstChild("SharkyKeyUI") then
+    game:GetService("CoreGui").SharkyKeyUI:Destroy()
 end
 
-return UILib
+-- SERVICES
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local LP = Players.LocalPlayer
+
+-- ======================================================
+-- CONFIG
+-- ======================================================
+local VALID_KEY = "SHARKY-ACCESS-2026" -- CHANGE THIS
+local DISCORD_LINK = "https://discord.gg/yourserver"
+local YOUTUBE_LINK = "https://youtube.com/@yourchannel"
+
+-- ======================================================
+-- UI SETUP
+-- ======================================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SharkyKeyUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game:GetService("CoreGui")
+
+local Main = Instance.new("Frame")
+Main.Size = UDim2.fromOffset(420, 260)
+Main.Position = UDim2.fromScale(0.5, 0.5)
+Main.AnchorPoint = Vector2.new(0.5, 0.5)
+Main.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+Main.BackgroundTransparency = 1
+Main.Parent = ScreenGui
+
+local Corner = Instance.new("UICorner", Main)
+Corner.CornerRadius = UDim.new(0, 14)
+
+local Stroke = Instance.new("UIStroke", Main)
+Stroke.Color = Color3.fromRGB(60, 60, 60)
+Stroke.Transparency = 0.4
+
+-- ======================================================
+-- TITLE BAR
+-- ======================================================
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1, 0, 0, 55)
+TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+TopBar.Parent = Main
+
+Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 14)
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -20, 1, 0)
+Title.Position = UDim2.fromOffset(10, 0)
+Title.Text = "🔐 SHARKY HUB ACCESS"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 18
+Title.BackgroundTransparency = 1
+Title.TextXAlignment = Left
+Title.Parent = TopBar
+
+-- ======================================================
+-- BODY
+-- ======================================================
+local Info = Instance.new("TextLabel")
+Info.Size = UDim2.new(1, -40, 0, 40)
+Info.Position = UDim2.fromOffset(20, 70)
+Info.Text = "Enter your key below to unlock the hub"
+Info.TextColor3 = Color3.fromRGB(180, 180, 180)
+Info.Font = Enum.Font.Gotham
+Info.TextSize = 14
+Info.TextWrapped = true
+Info.BackgroundTransparency = 1
+Info.Parent = Main
+
+-- INPUT
+local KeyBox = Instance.new("TextBox")
+KeyBox.Size = UDim2.new(1, -40, 0, 42)
+KeyBox.Position = UDim2.fromOffset(20, 120)
+KeyBox.PlaceholderText = "ENTER KEY HERE"
+KeyBox.Text = ""
+KeyBox.TextColor3 = Color3.fromRGB(255,255,255)
+KeyBox.PlaceholderColor3 = Color3.fromRGB(120,120,120)
+KeyBox.Font = Enum.Font.Gotham
+KeyBox.TextSize = 14
+KeyBox.BackgroundColor3 = Color3.fromRGB(30,30,30)
+KeyBox.ClearTextOnFocus = false
+KeyBox.Parent = Main
+
+Instance.new("UICorner", KeyBox).CornerRadius = UDim.new(0, 10)
+
+-- ======================================================
+-- BUTTONS
+-- ======================================================
+local function CreateButton(text, x)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.3, -5, 0, 36)
+    btn.Position = UDim2.fromScale(x, 0.78)
+    btn.Text = text
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 13
+    btn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    btn.Parent = Main
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+    return btn
+end
+
+local Submit = CreateButton("UNLOCK", 0.05)
+local Discord = CreateButton("DISCORD", 0.35)
+local YouTube = CreateButton("YOUTUBE", 0.65)
+
+-- ======================================================
+-- ANIMATIONS
+-- ======================================================
+local function Tween(obj, props, time)
+    TweenService:Create(obj, TweenInfo.new(time, Enum.EasingStyle.Quint), props):Play()
+end
+
+-- OPEN ANIMATION
+Tween(Main, {BackgroundTransparency = 0}, 0.4)
+Main.Size = UDim2.fromOffset(420, 0)
+Tween(Main, {Size = UDim2.fromOffset(420, 260)}, 0.45)
+
+-- SHAKE
+local function Shake()
+    for i = 1, 6 do
+        Main.Position = Main.Position + UDim2.fromOffset(6, 0)
+        task.wait(0.03)
+        Main.Position = Main.Position - UDim2.fromOffset(6, 0)
+        task.wait(0.03)
+    end
+end
+
+-- SUCCESS
+local function Success()
+    Tween(Main, {BackgroundTransparency = 1}, 0.4)
+    task.wait(0.4)
+    ScreenGui:Destroy()
+    print("[SHARKY HUB] Access granted")
+    -- LOAD HUB HERE
+end
+
+-- ======================================================
+-- BUTTON LOGIC
+-- ======================================================
+Submit.MouseButton1Click:Connect(function()
+    if KeyBox.Text == VALID_KEY then
+        Success()
+    else
+        Shake()
+        KeyBox.Text = ""
+    end
+end)
+
+Discord.MouseButton1Click:Connect(function()
+    setclipboard(DISCORD_LINK)
+end)
+
+YouTube.MouseButton1Click:Connect(function()
+    setclipboard(YOUTUBE_LINK)
+end)
+
+-- ======================================================
+-- DRAG SUPPORT
+-- ======================================================
+local dragging, startPos, startMouse
+TopBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        startMouse = input.Position
+        startPos = Main.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - startMouse
+        Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
