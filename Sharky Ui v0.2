@@ -1,0 +1,249 @@
+--// Sharky Premium UI Library
+--// Synapse-Level Inspired (Original)
+--// Mobile + PC Compatible
+
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local LP = Players.LocalPlayer
+local PlayerGui = LP:WaitForChild("PlayerGui")
+
+--// Cleanup old UI
+pcall(function()
+    PlayerGui:FindFirstChild("SharkyUI"):Destroy()
+end)
+
+--// Main ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SharkyUI"
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
+
+--// THEME
+local Theme = {
+    Background = Color3.fromRGB(18,18,20),
+    Sidebar = Color3.fromRGB(22,22,25),
+    Accent = Color3.fromRGB(0,170,255),
+    Text = Color3.fromRGB(235,235,235),
+    Muted = Color3.fromRGB(140,140,140)
+}
+
+--// Utility
+local function Tween(obj, props, time, style)
+    TweenService:Create(
+        obj,
+        TweenInfo.new(time or 0.25, style or Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+        props
+    ):Play()
+end
+
+--// WINDOW
+local Window = Instance.new("Frame")
+Window.Size = UDim2.fromScale(0.55,0.6)
+Window.Position = UDim2.fromScale(0.5,0.5)
+Window.AnchorPoint = Vector2.new(0.5,0.5)
+Window.BackgroundColor3 = Theme.Background
+Window.BorderSizePixel = 0
+Window.Parent = ScreenGui
+Window.ClipsDescendants = true
+
+Instance.new("UICorner", Window).CornerRadius = UDim.new(0,14)
+
+--// DRAG
+do
+    local dragging, dragStart, startPos
+    Window.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = i.Position
+            startPos = Window.Position
+        end
+    end)
+    UIS.InputChanged:Connect(function(i)
+        if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = i.Position - dragStart
+            Window.Position = startPos + UDim2.fromOffset(delta.X, delta.Y)
+        end
+    end)
+    UIS.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+end
+
+--// TOP BAR
+local Top = Instance.new("Frame", Window)
+Top.Size = UDim2.new(1,0,0,48)
+Top.BackgroundTransparency = 1
+
+local Title = Instance.new("TextLabel", Top)
+Title.Text = "Sharky Hub Premium"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+Title.TextColor3 = Theme.Text
+Title.Position = UDim2.fromOffset(20,0)
+Title.Size = UDim2.new(1,0,1,0)
+Title.TextXAlignment = Left
+Title.BackgroundTransparency = 1
+
+--// SIDEBAR
+local Sidebar = Instance.new("Frame", Window)
+Sidebar.Size = UDim2.new(0,170,1,-48)
+Sidebar.Position = UDim2.fromOffset(0,48)
+Sidebar.BackgroundColor3 = Theme.Sidebar
+Sidebar.BorderSizePixel = 0
+Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0,14)
+
+--// CONTENT
+local Content = Instance.new("Frame", Window)
+Content.Size = UDim2.new(1,-170,1,-48)
+Content.Position = UDim2.fromOffset(170,48)
+Content.BackgroundTransparency = 1
+Content.ClipsDescendants = true
+
+--// TABS
+local Tabs = {}
+local CurrentTab
+
+local function CreateTab(name, icon)
+    local Button = Instance.new("TextButton", Sidebar)
+    Button.Size = UDim2.new(1,-16,0,42)
+    Button.Position = UDim2.fromOffset(8, (#Tabs)*48 + 8)
+    Button.Text = "  "..name
+    Button.Font = Enum.Font.Gotham
+    Button.TextSize = 14
+    Button.TextColor3 = Theme.Muted
+    Button.BackgroundColor3 = Theme.Sidebar
+    Button.BorderSizePixel = 0
+    Button.AutoButtonColor = false
+    Instance.new("UICorner", Button).CornerRadius = UDim.new(0,10)
+
+    local Page = Instance.new("ScrollingFrame", Content)
+    Page.Size = UDim2.fromScale(1,1)
+    Page.CanvasSize = UDim2.fromOffset(0,0)
+    Page.ScrollBarImageTransparency = 1
+    Page.Visible = false
+    Page.BackgroundTransparency = 1
+
+    Button.MouseButton1Click:Connect(function()
+        if CurrentTab then
+            Tween(CurrentTab.Page, {Position = UDim2.fromOffset(30,0), Transparency = 1}, 0.2)
+            CurrentTab.Page.Visible = false
+            Tween(CurrentTab.Button, {TextColor3 = Theme.Muted}, 0.2)
+        end
+        CurrentTab = {Button = Button, Page = Page}
+        Page.Visible = true
+        Page.Position = UDim2.fromOffset(-30,0)
+        Tween(Page, {Position = UDim2.fromOffset(0,0), Transparency = 0}, 0.3)
+        Tween(Button, {TextColor3 = Theme.Text}, 0.2)
+    end)
+
+    table.insert(Tabs, {Button = Button, Page = Page})
+    if not CurrentTab then
+        Button:Fire("MouseButton1Click")
+    end
+
+    return Page
+end
+
+--// NOTIFICATIONS
+local NotifyHolder = Instance.new("Frame", ScreenGui)
+NotifyHolder.Size = UDim2.fromScale(0.3,1)
+NotifyHolder.Position = UDim2.fromScale(0.7,0)
+NotifyHolder.BackgroundTransparency = 1
+
+local function Notify(title, text)
+    local N = Instance.new("Frame", NotifyHolder)
+    N.Size = UDim2.new(1,-20,0,70)
+    N.Position = UDim2.fromOffset(0,20)
+    N.BackgroundColor3 = Theme.Sidebar
+    Instance.new("UICorner", N).CornerRadius = UDim.new(0,12)
+
+    local T = Instance.new("TextLabel", N)
+    T.Text = title.."\n"..text
+    T.TextWrapped = true
+    T.Font = Enum.Font.Gotham
+    T.TextSize = 13
+    T.TextColor3 = Theme.Text
+    T.BackgroundTransparency = 1
+    T.Size = UDim2.new(1,-20,1,-20)
+    T.Position = UDim2.fromOffset(10,10)
+
+    Tween(N, {Position = UDim2.fromOffset(0,40)}, 0.3)
+    task.delay(3,function()
+        Tween(N,{Transparency = 1},0.3)
+        task.wait(0.3)
+        N:Destroy()
+    end)
+end
+
+--// KEY SYSTEM
+local KeyFrame = Instance.new("Frame", Window)
+KeyFrame.Size = UDim2.fromScale(1,1)
+KeyFrame.BackgroundColor3 = Theme.Background
+KeyFrame.ZIndex = 10
+
+local KeyTitle = Instance.new("TextLabel", KeyFrame)
+KeyTitle.Text = "🔐 LICENSE VERIFICATION"
+KeyTitle.Font = Enum.Font.GothamBold
+KeyTitle.TextSize = 18
+KeyTitle.TextColor3 = Theme.Text
+KeyTitle.Size = UDim2.new(1,0,0,60)
+KeyTitle.BackgroundTransparency = 1
+
+local KeyBox = Instance.new("TextBox", KeyFrame)
+KeyBox.PlaceholderText = "Enter your key here"
+KeyBox.Size = UDim2.fromScale(0.5,0.08)
+KeyBox.Position = UDim2.fromScale(0.25,0.4)
+KeyBox.BackgroundColor3 = Theme.Sidebar
+KeyBox.TextColor3 = Theme.Text
+KeyBox.Font = Enum.Font.Gotham
+Instance.new("UICorner", KeyBox).CornerRadius = UDim.new(0,10)
+
+local function KeyButton(text, x)
+    local B = Instance.new("TextButton", KeyFrame)
+    B.Text = text
+    B.Size = UDim2.fromScale(0.2,0.07)
+    B.Position = UDim2.fromScale(x,0.52)
+    B.BackgroundColor3 = Theme.Accent
+    B.TextColor3 = Color3.new(1,1,1)
+    B.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", B).CornerRadius = UDim.new(0,10)
+    return B
+end
+
+local Discord = KeyButton("Discord",0.25)
+local YouTube = KeyButton("YouTube",0.55)
+
+Discord.MouseButton1Click:Connect(function()
+    setclipboard("https://discord.gg/yourserver")
+    Notify("Copied","Discord link copied")
+end)
+
+YouTube.MouseButton1Click:Connect(function()
+    setclipboard("https://youtube.com")
+    Notify("Copied","YouTube link copied")
+end)
+
+KeyBox.FocusLost:Connect(function()
+    if KeyBox.Text ~= "" then
+        Tween(KeyFrame,{Transparency = 1},0.4)
+        task.wait(0.4)
+        KeyFrame:Destroy()
+        Notify("Access Granted","Welcome to Sharky Hub")
+    end
+end)
+
+--// EXAMPLE TABS
+local Main = CreateTab("Main","home")
+local Universal = CreateTab("Universal","layers")
+local Credits = CreateTab("Credits","info")
+
+Notify("Loaded","Sharky UI Initialized")
+
+return {
+    CreateTab = CreateTab,
+    Notify = Notify
+}
