@@ -141,6 +141,15 @@ local function Ripple(Obj)
     end)
 end
 
+--// GAME DETECTION
+local SupportedGames = {
+    [7449423635] = "Blox Fruits"
+}
+
+local function GetGame()
+    return SupportedGames[game.PlaceId]
+end
+
 --// MAIN LIBRARY LOGIC
 function Library:CreateWindow(Config)
     Config = Config or {}
