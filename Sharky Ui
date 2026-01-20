@@ -1,0 +1,98 @@
+-- ==================================================
+-- SIMPLE UNIVERSAL UI LIBRARY (STARTER)
+-- Works on most executors (PC + Mobile)
+-- ==================================================
+
+local UILib = {}
+UILib.__index = UILib
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
+
+-- ==================================================
+-- CREATE WINDOW
+-- ==================================================
+function UILib:CreateWindow(config)
+    config = config or {}
+
+    local player = Players.LocalPlayer
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "UILib"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = player:WaitForChild("PlayerGui")
+
+    local Main = Instance.new("Frame")
+    Main.Size = UDim2.fromOffset(520, 360)
+    Main.Position = UDim2.fromScale(0.5, 0.5)
+    Main.AnchorPoint = Vector2.new(0.5, 0.5)
+    Main.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+    Main.BorderSizePixel = 0
+    Main.Parent = ScreenGui
+
+    local UICorner = Instance.new("UICorner", Main)
+    UICorner.CornerRadius = UDim.new(0, 12)
+
+    local Top = Instance.new("Frame")
+    Top.Size = UDim2.new(1, 0, 0, 42)
+    Top.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    Top.BorderSizePixel = 0
+    Top.Parent = Main
+
+    local TopCorner = Instance.new("UICorner", Top)
+    TopCorner.CornerRadius = UDim.new(0, 12)
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, -20, 1, 0)
+    Title.Position = UDim2.fromOffset(10, 0)
+    Title.Text = config.Title or "Custom UI"
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 16
+    Title.BackgroundTransparency = 1
+    Title.Parent = Top
+
+    -- Dragging
+    local dragging, dragInput, dragStart, startPos
+
+    Top.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = Main.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    Top.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UIS.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            Main.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    local Window = {}
+    Window.Tabs = {}
+
+    return Window
+end
+
+return UILib
