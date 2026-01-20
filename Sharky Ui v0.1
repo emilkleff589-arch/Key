@@ -1,139 +1,108 @@
 --[[ 
-    SHARKY HUB | RAYFIELD EDITION (V6.0)
+    SHARKY HUB | OBSIDIAN PRISM (PREMIUM EDITION)
     
-    [RAYFIELD FEATURES ADAPTED]
-    - Segmented Layout: Topbar, Sidebar, and Elements separated.
-    - Component Strokes: Rayfield-style "ElementStroke" (Color3.fromRGB(50, 50, 50)).
-    - Interaction: Tab buttons with the signature Rayfield "Selection" glow.
-    - Full Logic: Omni-dragging and Edge-resizing preserved.
+    [DESIGN ARCHITECTURE]
+    - Layered Shadows: Uses offset frames with high blur (Transparency 0.85).
+    - Specular Edges: 1.2px UIStroke with a white-to-transparent gradient.
+    - Button Gloss: Subtle inner-glow gradients and top-highlighting.
+    - Motion: Quintic easing for hover states and tab transitions.
 ]]
 
 local Library = {
     Theme = {
-        Background = Color3.fromRGB(25, 25, 25),
-        Topbar = Color3.fromRGB(34, 34, 34),
-        Sidebar = Color3.fromRGB(30, 30, 30),
-        Accent = Color3.fromRGB(0, 146, 214), -- Rayfield Blue
-        ElementStroke = Color3.fromRGB(50, 50, 50),
-        Text = Color3.fromRGB(240, 240, 240),
-        SubText = Color3.fromRGB(178, 178, 178)
+        Background = Color3.fromRGB(15, 15, 17),
+        Sidebar = Color3.fromRGB(20, 20, 23),
+        Accent = Color3.fromRGB(0, 160, 255),
+        AccentGlow = Color3.fromRGB(0, 100, 255),
+        Stroke = Color3.fromRGB(45, 45, 50),
+        Text = Color3.fromRGB(255, 255, 255),
+        SubText = Color3.fromRGB(160, 160, 165),
     }
 }
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local CoreGui = game:GetService("CoreGui")
-local Viewport = (gethui and gethui()) or CoreGui
+local Viewport = (gethui and gethui()) or game:GetService("CoreGui")
 
 local function QuickTween(obj, props, time)
-    TweenService:Create(obj, TweenInfo.new(time or 0.3, Enum.EasingStyle.Quint), props):Play()
+    TweenService:Create(obj, TweenInfo.new(time or 0.35, Enum.EasingStyle.Quint), props):Play()
 end
 
 function Library:CreateWindow()
     local ScreenGui = Instance.new("ScreenGui", Viewport)
-    ScreenGui.Name = "Sharky_Rayfield_Edition"
+    ScreenGui.Name = "ObsidianPrism_Sharky"
     
+    --// SHADOW LAYER
+    local Shadow = Instance.new("Frame", ScreenGui)
+    Shadow.Size = UDim2.new(0, 610, 0, 410)
+    Shadow.Position = UDim2.new(0.5, -305, 0.5, -200)
+    Shadow.BackgroundColor3 = Color3.new(0,0,0)
+    Shadow.BackgroundTransparency = 0.8
+    Shadow.BorderSizePixel = 0
+    Instance.new("UICorner", Shadow).CornerRadius = UDim.new(0, 14)
+
     --// MAIN FRAME
     local Main = Instance.new("Frame", ScreenGui)
-    Main.Size = UDim2.new(0, 600, 0, 450)
-    Main.Position = UDim2.new(0.5, -300, 0.5, -225)
+    Main.Size = UDim2.new(0, 600, 0, 400)
+    Main.Position = UDim2.new(0.5, -300, 0.5, -200)
     Main.BackgroundColor3 = Library.Theme.Background
-    Main.BorderSizePixel = 0
-    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8)
+    Main.ClipsDescendants = true
+    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
 
-    -- Top Shadow / Stroke
-    local MainStroke = Instance.new("UIStroke", Main)
-    MainStroke.Color = Library.Theme.ElementStroke
-    MainStroke.Thickness = 1
+    -- Glossy Specular Stroke
+    local SpecularStroke = Instance.new("UIStroke", Main)
+    SpecularStroke.Thickness = 1.2
+    local SGrad = Instance.new("UIGradient", SpecularStroke)
+    SGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.new(1,1,1)), -- Bright corner
+        ColorSequenceKeypoint.new(0.5, Library.Theme.Stroke),
+        ColorSequenceKeypoint.new(1, Color3.new(0.1, 0.1, 0.1))
+    })
+    SGrad.Rotation = 45
 
-    --// RAYFIELD TOPBAR
-    local Topbar = Instance.new("Frame", Main)
-    Topbar.Size = UDim2.new(1, 0, 0, 45)
-    Topbar.BackgroundColor3 = Library.Theme.Topbar
-    Topbar.BorderSizePixel = 0
-    local TopCorner = Instance.new("UICorner", Topbar)
-    TopCorner.CornerRadius = UDim.new(0, 8)
-    
-    -- "Repair" corner (hides rounded bottom of topbar)
-    local Repair = Instance.new("Frame", Topbar)
-    Repair.Size = UDim2.new(1, 0, 0, 10)
-    Repair.Position = UDim2.new(0, 0, 1, -10)
-    Repair.BackgroundColor3 = Library.Theme.Topbar
-    Repair.BorderSizePixel = 0
-
-    local HubTitle = Instance.new("TextLabel", Topbar)
-    HubTitle.Text = "Sharky | v.1.0"
-    HubTitle.Size = UDim2.new(0, 200, 1, 0)
-    HubTitle.Position = UDim2.new(0, 15, 0, 0)
-    HubTitle.Font = Enum.Font.GothamMedium
-    HubTitle.TextColor3 = Library.Theme.Text
-    HubTitle.TextSize = 15
-    HubTitle.TextXAlignment = Enum.TextXAlignment.Left
-    HubTitle.BackgroundTransparency = 1
-
-    --// SIDEBAR & CONTENT AREA
-    local Container = Instance.new("Frame", Main)
-    Container.Size = UDim2.new(1, 0, 1, -45)
-    Container.Position = UDim2.new(0, 0, 0, 45)
-    Container.BackgroundTransparency = 1
-
-    local Sidebar = Instance.new("Frame", Container)
-    Sidebar.Size = UDim2.new(0, 160, 1, 0)
+    --// SIDEBAR
+    local Sidebar = Instance.new("Frame", Main)
+    Sidebar.Size = UDim2.new(0, 170, 1, 0)
     Sidebar.BackgroundColor3 = Library.Theme.Sidebar
     Sidebar.BorderSizePixel = 0
-
-    local SideStroke = Instance.new("Frame", Sidebar)
-    SideStroke.Size = UDim2.new(0, 1, 1, 0)
-    SideStroke.Position = UDim2.new(1, 0, 0, 0)
-    SideStroke.BackgroundColor3 = Library.Theme.ElementStroke
-    SideStroke.BorderSizePixel = 0
+    
+    local HubLabel = Instance.new("TextLabel", Sidebar)
+    HubLabel.Text = "SHARKY"
+    HubLabel.Size = UDim2.new(1, 0, 0, 60)
+    HubLabel.Font = Enum.Font.GothamBold
+    HubLabel.TextColor3 = Library.Theme.Text
+    HubLabel.TextSize = 18
+    HubLabel.BackgroundTransparency = 1
+    HubLabel.TextXAlignment = Enum.TextXAlignment.Center
 
     local TabHolder = Instance.new("ScrollingFrame", Sidebar)
-    TabHolder.Size = UDim2.new(1, -10, 1, -20)
-    TabHolder.Position = UDim2.new(0, 5, 0, 10)
+    TabHolder.Size = UDim2.new(1, -20, 1, -70)
+    TabHolder.Position = UDim2.new(0, 10, 0, 60)
     TabHolder.BackgroundTransparency = 1
     TabHolder.ScrollBarThickness = 0
-    local TabListLayout = Instance.new("UIListLayout", TabHolder)
-    TabListLayout.Padding = UDim.new(0, 5)
+    local TabList = Instance.new("UIListLayout", TabHolder)
+    TabList.Padding = UDim.new(0, 8)
 
-    local Content = Instance.new("Frame", Container)
-    Content.Size = UDim2.new(1, -170, 1, -10)
-    Content.Position = UDim2.new(0, 170, 0, 5)
+    --// CONTENT
+    local Content = Instance.new("Frame", Main)
+    Content.Size = UDim2.new(1, -190, 1, -20)
+    Content.Position = UDim2.new(0, 180, 0, 10)
     Content.BackgroundTransparency = 1
 
-    --// DRAG & RESIZE
-    local dragging, resizing, dragStart, startPos, resStart, resSize
-    
-    Topbar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true; dragStart = input.Position; startPos = Main.Position
-        end
-    end)
-
+    --// DRAGGABLE LOGIC
+    local dragging, dragStart, startPos
     Main.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            local mousePos = UserInputService:GetMouseLocation()
-            local framePos = Main.AbsolutePosition
-            local frameSize = Main.AbsoluteSize
-            if (framePos.X + frameSize.X - mousePos.X) < 20 and (framePos.Y + frameSize.Y - mousePos.Y) < 20 then
-                resizing = true; resStart = input.Position; resSize = Main.Size
-            end
+            dragging = true; dragStart = input.Position; startPos = Main.Position
+            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
         end
     end)
-
     UserInputService.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
-            Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        elseif resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = input.Position - resStart
-            Main.Size = UDim2.new(0, math.clamp(resSize.X.Offset + delta.X, 450, 1000), 0, math.clamp(resSize.Y.Offset + delta.Y, 300, 700))
-        end
-    end)
-    
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false; resizing = false
+            local newPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            Main.Position = newPos
+            Shadow.Position = UDim2.new(newPos.X.Scale, newPos.X.Offset - 5, newPos.Y.Scale, newPos.Y.Offset + 5)
         end
     end)
 
@@ -142,49 +111,74 @@ function Library:CreateWindow()
     local firstTab = true
 
     function Window:CreateTab(tName)
-        local isHome = firstTab
-        firstTab = false
-        local finalName = isHome and "Home" or tName
-
         local TabBtn = Instance.new("TextButton", TabHolder)
-        TabBtn.Size = UDim2.new(1, 0, 0, 32)
+        TabBtn.Size = UDim2.new(1, 0, 0, 38)
         TabBtn.BackgroundColor3 = Library.Theme.Accent
         TabBtn.BackgroundTransparency = 1
         TabBtn.Text = ""
         TabBtn.AutoButtonColor = false
-        Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
+        Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 8)
 
         local TText = Instance.new("TextLabel", TabBtn)
-        TText.Text = finalName
+        TText.Text = tName
         TText.Size = UDim2.new(1, 0, 1, 0)
         TText.Font = Enum.Font.GothamMedium
         TText.TextColor3 = Library.Theme.SubText
         TText.TextSize = 13
         TText.BackgroundTransparency = 1
 
-        local Page = Instance.new("ScrollingFrame", Content)
+        -- Inner Gloss Gradient for Button
+        local BtnGrad = Instance.new("UIGradient", TabBtn)
+        BtnGrad.Color = ColorSequence.new(Color3.new(1,1,1), Library.Theme.Accent)
+        BtnGrad.Rotation = 90
+        BtnGrad.Enabled = false
+
+        local Page = Instance.new("CanvasGroup", Content)
         Page.Size = UDim2.new(1, 0, 1, 0)
         Page.Visible = false
         Page.BackgroundTransparency = 1
-        Page.ScrollBarThickness = 2
-        Instance.new("UIListLayout", Page).Padding = UDim.new(0, 8)
 
         local function Select()
             for _, v in pairs(Tabs) do
                 v.Page.Visible = false
                 QuickTween(v.Btn, {BackgroundTransparency = 1})
                 QuickTween(v.Text, {TextColor3 = Library.Theme.SubText})
+                v.Grad.Enabled = false
             end
             Page.Visible = true
-            QuickTween(TabBtn, {BackgroundTransparency = 0.85})
+            Page.GroupTransparency = 1
+            QuickTween(Page, {GroupTransparency = 0}, 0.5)
+            QuickTween(TabBtn, {BackgroundTransparency = 0.15})
             QuickTween(TText, {TextColor3 = Library.Theme.Text})
+            BtnGrad.Enabled = true
         end
 
+        TabBtn.MouseEnter:Connect(function()
+            if not Page.Visible then QuickTween(TText, {TextColor3 = Library.Theme.Text}) end
+        end)
+        TabBtn.MouseLeave:Connect(function()
+            if not Page.Visible then QuickTween(TText, {TextColor3 = Library.Theme.SubText}) end
+        end)
         TabBtn.MouseButton1Click:Connect(Select)
-        table.insert(Tabs, {Btn = TabBtn, Page = Page, Text = TText})
 
-        if isHome then Select() end
-        return {}
+        table.insert(Tabs, {Btn = TabBtn, Page = Page, Text = TText, Grad = BtnGrad})
+        if firstTab then firstTab = false; Select() end
+
+        return {
+            AddButton = function(_, text, callback)
+                local b = Instance.new("TextButton", Page)
+                b.Size = UDim2.new(1, 0, 0, 40)
+                b.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+                b.Text = text
+                b.Font = Enum.Font.GothamMedium
+                b.TextColor3 = Color3.new(1,1,1)
+                b.TextSize = 14
+                Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+                Instance.new("UIStroke", b).Color = Library.Theme.Stroke
+                
+                b.MouseButton1Click:Connect(callback)
+            end
+        }
     end
 
     return Window
