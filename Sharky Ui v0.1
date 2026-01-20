@@ -1,29 +1,29 @@
 --[[ 
-    TITANIUM UI LIBRARY | ELITE SIDEBAR EDITION (V3.0.0)
+    SHARKY HUB | TITANIUM V4.0 (PREMIUM)
     
-    [VISUAL UPGRADES]
-    - Floating Pill Selector: A smooth, animated pill that slides between tabs.
-    - Glass Edge Highlights: Specular strokes on the sidebar for a "Cool" 3D look.
-    - Adaptive Tab Padding: Clean, consistent spacing with Lucide Icons.
-    - Staggered Page Entry: Content "lifts" into view when switching.
-    - 0.08 Acrylic Base: Maintained for that ultra-clean transparency.
+    [FEATURES]
+    - Full Frame Draggable (Grab anywhere)
+    - Bottom-Right Corner Resizing
+    - Pinned "Home" Tab (Top Aligned)
+    - Floating Neon Selector Pill
+    - 0.08 Glass Acrylic Transparency
+    - Lucide Icon Support
 ]]
 
 local Library = {
     Theme = {
         Main = Color3.fromRGB(10, 10, 10),
         Sidebar = Color3.fromRGB(15, 15, 15),
-        Accent = Color3.fromRGB(0, 160, 255),
+        Accent = Color3.fromRGB(0, 180, 255),
         Text = Color3.fromRGB(255, 255, 255),
-        SubText = Color3.fromRGB(150, 150, 150),
-        Stroke = Color3.fromRGB(70, 70, 70),
+        SubText = Color3.fromRGB(160, 160, 160),
+        Stroke = Color3.fromRGB(80, 80, 80),
         GlassLight = Color3.fromRGB(255, 255, 255),
         Icons = {
             ["home"] = "rbxassetid://10723345518",
             ["settings"] = "rbxassetid://10709819149",
             ["zap"] = "rbxassetid://10705034321",
-            ["shield"] = "rbxassetid://10705036544",
-            ["info"] = "rbxassetid://10704924100"
+            ["shield"] = "rbxassetid://10705036544"
         }
     }
 }
@@ -33,16 +33,49 @@ local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 local Viewport = (gethui and gethui()) or CoreGui
 
-local function QuickTween(obj, props, time, style)
-    local info = TweenInfo.new(time or 0.4, style or Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-    local t = TweenService:Create(obj, info, props)
-    t:Play()
-    return t
+local function QuickTween(obj, props, time)
+    TweenService:Create(obj, TweenInfo.new(time or 0.4, Enum.EasingStyle.Quint), props):Play()
 end
 
-function Library:CreateWindow(cfg)
+--// UTILITY: DRAG & RESIZE
+local function InitSystems(main, resizeHandle)
+    local dragging, dragInput, dragStart, startPos
+    local resizing, resStart, resSize
+
+    -- Draggable (Whole Frame)
+    main.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true; dragStart = input.Position; startPos = main.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+
+    -- Resizable (Handle Only)
+    resizeHandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            resizing = true; resStart = input.Position; resSize = main.Size
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then resizing = false end
+            end)
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        elseif resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - resStart
+            main.Size = UDim2.new(0, math.clamp(resSize.X.Offset + delta.X, 550, 1100), 0, math.clamp(resSize.Y.Offset + delta.Y, 350, 800))
+        end
+    end)
+end
+
+function Library:CreateWindow()
     local ScreenGui = Instance.new("ScreenGui", Viewport)
-    ScreenGui.Name = "Titanium_Elite_V3"
+    ScreenGui.Name = "SharkyHub_V1"
     
     --// MAIN FRAME
     local Main = Instance.new("Frame", ScreenGui)
@@ -50,76 +83,84 @@ function Library:CreateWindow(cfg)
     Main.Position = UDim2.new(0.5, -340, 0.5, -230)
     Main.BackgroundColor3 = Library.Theme.Main
     Main.BackgroundTransparency = 0.08
-    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 14)
 
+    -- Glass Bevel Stroke
     local MainStroke = Instance.new("UIStroke", Main)
-    MainStroke.Thickness = 1.2
+    MainStroke.Thickness = 1.3
     MainStroke.Color = Color3.new(1,1,1)
-    local MSGrad = Instance.new("UIGradient", MainStroke)
-    MSGrad.Color = ColorSequence.new({
+    local MGrad = Instance.new("UIGradient", MainStroke)
+    MGrad.Color = ColorSequence.new({
         ColorSequenceKeypoint.new(0, Library.Theme.GlassLight),
-        ColorSequenceKeypoint.new(0.3, Library.Theme.Stroke),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 20))
+        ColorSequenceKeypoint.new(0.4, Library.Theme.Stroke),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(20,20,20))
     })
-    MSGrad.Rotation = 45
+    MGrad.Rotation = 45
 
-    --// SIDEBAR (CLEANER & COOLER)
+    --// SIDEBAR
     local Sidebar = Instance.new("Frame", Main)
-    Sidebar.Size = UDim2.new(0, 175, 1, -24)
-    Sidebar.Position = UDim2.new(0, 12, 0, 12) -- Balanced padding
+    Sidebar.Size = UDim2.new(0, 185, 1, -24)
+    Sidebar.Position = UDim2.new(0, 12, 0, 12)
     Sidebar.BackgroundColor3 = Library.Theme.Sidebar
     Sidebar.BackgroundTransparency = 0.4
     Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 12)
 
-    -- Specular highlight for sidebar edge
-    local SideStroke = Instance.new("UIStroke", Sidebar)
-    SideStroke.Color = Color3.new(1,1,1)
-    SideStroke.Transparency = 0.7
-    local SSGrad = Instance.new("UIGradient", SideStroke)
-    SSGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Library.Theme.GlassLight),
-        ColorSequenceKeypoint.new(1, Library.Theme.Sidebar)
-    })
-    SSGrad.Rotation = 135
+    -- HUB BRANDING
+    local HubTitle = Instance.new("TextLabel", Sidebar)
+    HubTitle.Text = "Sharky | v.1.0"
+    HubTitle.Size = UDim2.new(1, 0, 0, 50)
+    HubTitle.Font = Enum.Font.GothamBold
+    HubTitle.TextColor3 = Library.Theme.Text
+    HubTitle.TextSize = 16
+    HubTitle.BackgroundTransparency = 1
+    
+    local TitleGlow = Instance.new("Frame", HubTitle)
+    TitleGlow.Size = UDim2.new(0.6, 0, 0, 1)
+    TitleGlow.Position = UDim2.new(0.2, 0, 0.8, 0)
+    TitleGlow.BackgroundColor3 = Library.Theme.Accent
+    TitleGlow.BorderSizePixel = 0
+    Instance.new("UIStroke", TitleGlow).Color = Library.Theme.Accent
 
+    -- TAB HOLDER (Top Aligned)
     local TabHolder = Instance.new("ScrollingFrame", Sidebar)
-    TabHolder.Size = UDim2.new(1, 0, 1, -50)
-    TabHolder.Position = UDim2.new(0, 0, 0, 45)
+    TabHolder.Size = UDim2.new(1, 0, 1, -70)
+    TabHolder.Position = UDim2.new(0, 0, 0, 60)
     TabHolder.BackgroundTransparency = 1
     TabHolder.ScrollBarThickness = 0
     
     local TabList = Instance.new("UIListLayout", TabHolder)
     TabList.Padding = UDim.new(0, 6)
+    TabList.VerticalAlignment = Enum.VerticalAlignment.Top -- ENSURES HOME IS AT TOP
     Instance.new("UIPadding", TabHolder).PaddingLeft = UDim.new(0, 12)
     Instance.new("UIPadding", TabHolder).PaddingRight = UDim.new(0, 12)
 
-    -- THE SELECTOR PILL (The "Cool" Factor)
+    -- FLOATING PILL
     local SelectorPill = Instance.new("Frame", TabHolder)
-    SelectorPill.Size = UDim2.new(1, 0, 0, 36)
+    SelectorPill.Size = UDim2.new(1, 0, 0, 38)
     SelectorPill.BackgroundColor3 = Library.Theme.Accent
-    SelectorPill.BackgroundTransparency = 0.8
-    SelectorPill.BorderSizePixel = 0
-    SelectorPill.ZIndex = 0 -- Behind text
+    SelectorPill.BackgroundTransparency = 0.85
+    SelectorPill.ZIndex = 0
     Instance.new("UICorner", SelectorPill).CornerRadius = UDim.new(0, 8)
-    
     local PillStroke = Instance.new("UIStroke", SelectorPill)
     PillStroke.Color = Library.Theme.Accent
-    PillStroke.Thickness = 1
     PillStroke.Transparency = 0.5
-
-    local PillGloss = Instance.new("UIGradient", SelectorPill)
-    PillGloss.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.new(1,1,1)),
-        ColorSequenceKeypoint.new(1, Library.Theme.Accent)
-    })
-    PillGloss.Rotation = 90
-    PillGloss.Transparency = NumberSequence.new(0.4)
 
     --// CONTENT
     local Content = Instance.new("Frame", Main)
-    Content.Size = UDim2.new(1, -210, 1, -24)
-    Content.Position = UDim2.new(0, 197, 0, 12)
+    Content.Size = UDim2.new(1, -220, 1, -24)
+    Content.Position = UDim2.new(0, 208, 0, 12)
     Content.BackgroundTransparency = 1
+
+    --// RESIZE HANDLE
+    local ResizeHandle = Instance.new("ImageLabel", Main)
+    ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
+    ResizeHandle.Position = UDim2.new(1, -22, 1, -22)
+    ResizeHandle.BackgroundTransparency = 1
+    ResizeHandle.Image = "rbxassetid://6031289116"
+    ResizeHandle.ImageColor3 = Library.Theme.Accent
+    ResizeHandle.ZIndex = 10
+
+    InitSystems(Main, ResizeHandle)
 
     local Window = {}
     local Tabs = {}
@@ -133,22 +174,22 @@ function Library:CreateWindow(cfg)
         local finalIcon = isHome and "home" or tIcon
 
         local TabBtn = Instance.new("TextButton", TabHolder)
-        TabBtn.Size = UDim2.new(1, 0, 0, 36)
+        TabBtn.Size = UDim2.new(1, 0, 0, 38)
         TabBtn.BackgroundTransparency = 1
         TabBtn.Text = ""
         TabBtn.AutoButtonColor = false
 
         local TIcon = Instance.new("ImageLabel", TabBtn)
         TIcon.Size = UDim2.new(0, 20, 0, 20)
-        TIcon.Position = UDim2.new(0, 10, 0.5, -10)
+        TIcon.Position = UDim2.new(0, 12, 0.5, -10)
         TIcon.BackgroundTransparency = 1
         TIcon.Image = Library.Theme.Icons[finalIcon] or Library.Theme.Icons["zap"]
         TIcon.ImageColor3 = Library.Theme.SubText
 
         local TText = Instance.new("TextLabel", TabBtn)
         TText.Text = finalName
+        TText.Position = UDim2.new(0, 42, 0, 0)
         TText.Size = UDim2.new(1, -45, 1, 0)
-        TText.Position = UDim2.new(0, 40, 0, 0)
         TText.Font = Enum.Font.GothamMedium
         TText.TextColor3 = Library.Theme.SubText
         TText.TextSize = 13
@@ -167,20 +208,16 @@ function Library:CreateWindow(cfg)
                 QuickTween(v.Icon, {ImageColor3 = Library.Theme.SubText})
             end
             
-            -- Move the cool selector pill
-            QuickTween(SelectorPill, {Position = UDim2.new(0, 0, 0, TabBtn.Position.Y.Offset)}, 0.5, Enum.EasingStyle.Expo)
+            -- Snappy Pill Animation
+            QuickTween(SelectorPill, {Position = UDim2.new(0, 0, 0, TabBtn.Position.Y.Offset)}, 0.4, Enum.EasingStyle.Back)
             
             Page.Visible = true
             Page.GroupTransparency = 1
-            Page.Position = UDim2.new(0, 0, 0, 10) -- Lift up effect
+            Page.Position = UDim2.new(0, 0, 0, 15)
             
-            QuickTween(Page, {GroupTransparency = 0, Position = UDim2.new(0, 0, 0, 0)}, 0.5)
+            QuickTween(Page, {GroupTransparency = 0, Position = UDim2.new(0, 0, 0, 0)})
             QuickTween(TText, {TextColor3 = Library.Theme.Text})
             QuickTween(TIcon, {ImageColor3 = Library.Theme.Accent})
-            
-            -- Bounce Icon
-            TIcon.Size = UDim2.new(0, 16, 0, 16)
-            QuickTween(TIcon, {Size = UDim2.new(0, 20, 0, 20)}, 0.6, Enum.EasingStyle.Elastic)
         end
 
         TabBtn.MouseButton1Click:Connect(Select)
@@ -193,23 +230,8 @@ function Library:CreateWindow(cfg)
             end)
         end
         
-        return {} -- Elements logic
+        return {} -- Elements
     end
-
-    -- Draggable Logic (Internal)
-    local dragging, dragStart, startPos
-    Sidebar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true; dragStart = input.Position; startPos = Main.Position
-            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = input.Position - dragStart
-            Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
 
     return Window
 end
