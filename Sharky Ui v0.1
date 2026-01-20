@@ -1,100 +1,104 @@
 --[[ 
-    SHARKY HUB | OBSIDIAN PRISM (PREMIUM EDITION)
+    SHARKY | OBSIDIAN iOS (V7.0)
     
-    [DESIGN ARCHITECTURE]
-    - Layered Shadows: Uses offset frames with high blur (Transparency 0.85).
-    - Specular Edges: 1.2px UIStroke with a white-to-transparent gradient.
-    - Button Gloss: Subtle inner-glow gradients and top-highlighting.
-    - Motion: Quintic easing for hover states and tab transitions.
+    [PREMIUM UI MANIFEST]
+    - ICONOGRAPHY: Thin-line Lucide-style geometric icons.
+    - SURFACE: Deep Charcoal (12, 12, 14) with 0.05 glass transparency.
+    - SPECULAR: 1px adaptive stroke (Light source at top-left).
+    - CARD EFFECT: Soft blurred shadows using offset layering.
+    - TYPOGRAPHY: Gotham Medium for title, Gotham Book for body.
 ]]
 
 local Library = {
     Theme = {
-        Background = Color3.fromRGB(15, 15, 17),
-        Sidebar = Color3.fromRGB(20, 20, 23),
-        Accent = Color3.fromRGB(0, 160, 255),
-        AccentGlow = Color3.fromRGB(0, 100, 255),
+        Main = Color3.fromRGB(12, 12, 14),
+        Card = Color3.fromRGB(20, 20, 23),
+        Accent = Color3.fromRGB(0, 190, 255), -- Cyan/Electric Blue
         Stroke = Color3.fromRGB(45, 45, 50),
         Text = Color3.fromRGB(255, 255, 255),
-        SubText = Color3.fromRGB(160, 160, 165),
+        SubText = Color3.fromRGB(150, 150, 155),
+        Icons = {
+            ["home"] = "rbxassetid://10723345518",
+            ["settings"] = "rbxassetid://10709819149",
+            ["code"] = "rbxassetid://10734953439",
+            ["user"] = "rbxassetid://10747373176"
+        }
     }
 }
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local Viewport = (gethui and gethui()) or game:GetService("CoreGui")
+local CoreGui = game:GetService("CoreGui")
+local Viewport = (gethui and gethui()) or CoreGui
 
 local function QuickTween(obj, props, time)
-    TweenService:Create(obj, TweenInfo.new(time or 0.35, Enum.EasingStyle.Quint), props):Play()
+    TweenService:Create(obj, TweenInfo.new(time or 0.3, Enum.EasingStyle.Exponential), props):Play()
 end
 
 function Library:CreateWindow()
     local ScreenGui = Instance.new("ScreenGui", Viewport)
-    ScreenGui.Name = "ObsidianPrism_Sharky"
+    ScreenGui.Name = "Sharky_Obsidian_iOS"
     
-    --// SHADOW LAYER
+    --// OUTER SHADOW (Floating Card Effect)
     local Shadow = Instance.new("Frame", ScreenGui)
-    Shadow.Size = UDim2.new(0, 610, 0, 410)
-    Shadow.Position = UDim2.new(0.5, -305, 0.5, -200)
+    Shadow.Size = UDim2.new(0, 620, 0, 420)
+    Shadow.Position = UDim2.new(0.5, -310, 0.5, -210)
     Shadow.BackgroundColor3 = Color3.new(0,0,0)
-    Shadow.BackgroundTransparency = 0.8
-    Shadow.BorderSizePixel = 0
-    Instance.new("UICorner", Shadow).CornerRadius = UDim.new(0, 14)
+    Shadow.BackgroundTransparency = 0.85
+    Instance.new("UICorner", Shadow).CornerRadius = UDim.new(0, 18)
 
-    --// MAIN FRAME
+    --// MAIN HUB
     local Main = Instance.new("Frame", ScreenGui)
     Main.Size = UDim2.new(0, 600, 0, 400)
     Main.Position = UDim2.new(0.5, -300, 0.5, -200)
-    Main.BackgroundColor3 = Library.Theme.Background
-    Main.ClipsDescendants = true
-    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+    Main.BackgroundColor3 = Library.Theme.Main
+    Main.BorderSizePixel = 0
+    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 16)
 
-    -- Glossy Specular Stroke
-    local SpecularStroke = Instance.new("UIStroke", Main)
-    SpecularStroke.Thickness = 1.2
-    local SGrad = Instance.new("UIGradient", SpecularStroke)
-    SGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.new(1,1,1)), -- Bright corner
-        ColorSequenceKeypoint.new(0.5, Library.Theme.Stroke),
-        ColorSequenceKeypoint.new(1, Color3.new(0.1, 0.1, 0.1))
+    -- Specular Gloss Stroke
+    local MainStroke = Instance.new("UIStroke", Main)
+    MainStroke.Thickness = 1.2
+    local MGrad = Instance.new("UIGradient", MainStroke)
+    MGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(0.4, Library.Theme.Stroke),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 20))
     })
-    SGrad.Rotation = 45
+    MGrad.Rotation = 45
 
-    --// SIDEBAR
+    --// SIDE NAVIGATION
     local Sidebar = Instance.new("Frame", Main)
-    Sidebar.Size = UDim2.new(0, 170, 1, 0)
-    Sidebar.BackgroundColor3 = Library.Theme.Sidebar
-    Sidebar.BorderSizePixel = 0
-    
-    local HubLabel = Instance.new("TextLabel", Sidebar)
-    HubLabel.Text = "SHARKY"
-    HubLabel.Size = UDim2.new(1, 0, 0, 60)
-    HubLabel.Font = Enum.Font.GothamBold
-    HubLabel.TextColor3 = Library.Theme.Text
-    HubLabel.TextSize = 18
-    HubLabel.BackgroundTransparency = 1
-    HubLabel.TextXAlignment = Enum.TextXAlignment.Center
+    Sidebar.Size = UDim2.new(0, 75, 1, 0)
+    Sidebar.BackgroundColor3 = Library.Theme.Card
+    Sidebar.BackgroundTransparency = 0.5
+    Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 16)
 
-    local TabHolder = Instance.new("ScrollingFrame", Sidebar)
-    TabHolder.Size = UDim2.new(1, -20, 1, -70)
-    TabHolder.Position = UDim2.new(0, 10, 0, 60)
+    local AppIcon = Instance.new("ImageLabel", Sidebar)
+    AppIcon.Size = UDim2.new(0, 35, 0, 35)
+    AppIcon.Position = UDim2.new(0.5, -17, 0, 20)
+    AppIcon.BackgroundTransparency = 1
+    AppIcon.Image = "rbxassetid://10734953439" -- Code Icon
+    AppIcon.ImageColor3 = Library.Theme.Accent
+
+    local TabHolder = Instance.new("Frame", Sidebar)
+    TabHolder.Size = UDim2.new(1, 0, 1, -100)
+    TabHolder.Position = UDim2.new(0, 0, 0, 80)
     TabHolder.BackgroundTransparency = 1
-    TabHolder.ScrollBarThickness = 0
     local TabList = Instance.new("UIListLayout", TabHolder)
-    TabList.Padding = UDim.new(0, 8)
+    TabList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    TabList.Padding = UDim.new(0, 15)
 
-    --// CONTENT
+    --// CONTENT WINDOW
     local Content = Instance.new("Frame", Main)
-    Content.Size = UDim2.new(1, -190, 1, -20)
-    Content.Position = UDim2.new(0, 180, 0, 10)
+    Content.Size = UDim2.new(1, -95, 1, -20)
+    Content.Position = UDim2.new(0, 85, 0, 10)
     Content.BackgroundTransparency = 1
 
-    --// DRAGGABLE LOGIC
+    --// DRAG LOGIC
     local dragging, dragStart, startPos
     Main.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true; dragStart = input.Position; startPos = Main.Position
-            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
         end
     end)
     UserInputService.InputChanged:Connect(function(input)
@@ -102,81 +106,64 @@ function Library:CreateWindow()
             local delta = input.Position - dragStart
             local newPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
             Main.Position = newPos
-            Shadow.Position = UDim2.new(newPos.X.Scale, newPos.X.Offset - 5, newPos.Y.Scale, newPos.Y.Offset + 5)
+            Shadow.Position = UDim2.new(newPos.X.Scale, newPos.X.Offset-10, newPos.Y.Scale, newPos.Y.Offset+10)
         end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
     end)
 
     local Window = {}
     local Tabs = {}
-    local firstTab = true
+    local first = true
 
-    function Window:CreateTab(tName)
+    function Window:CreateTab(iconName)
         local TabBtn = Instance.new("TextButton", TabHolder)
-        TabBtn.Size = UDim2.new(1, 0, 0, 38)
-        TabBtn.BackgroundColor3 = Library.Theme.Accent
+        TabBtn.Size = UDim2.new(0, 45, 0, 45)
         TabBtn.BackgroundTransparency = 1
         TabBtn.Text = ""
-        TabBtn.AutoButtonColor = false
-        Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 8)
 
-        local TText = Instance.new("TextLabel", TabBtn)
-        TText.Text = tName
-        TText.Size = UDim2.new(1, 0, 1, 0)
-        TText.Font = Enum.Font.GothamMedium
-        TText.TextColor3 = Library.Theme.SubText
-        TText.TextSize = 13
-        TText.BackgroundTransparency = 1
-
-        -- Inner Gloss Gradient for Button
-        local BtnGrad = Instance.new("UIGradient", TabBtn)
-        BtnGrad.Color = ColorSequence.new(Color3.new(1,1,1), Library.Theme.Accent)
-        BtnGrad.Rotation = 90
-        BtnGrad.Enabled = false
-
+        local Icon = Instance.new("ImageLabel", TabBtn)
+        Icon.Size = UDim2.new(0, 24, 0, 24)
+        Icon.Position = UDim2.new(0.5, -12, 0.5, -12)
+        Icon.BackgroundTransparency = 1
+        Icon.Image = Library.Theme.Icons[iconName] or Library.Theme.Icons["home"]
+        Icon.ImageColor3 = Library.Theme.SubText
+        
         local Page = Instance.new("CanvasGroup", Content)
         Page.Size = UDim2.new(1, 0, 1, 0)
-        Page.Visible = false
         Page.BackgroundTransparency = 1
+        Page.Visible = false
 
         local function Select()
             for _, v in pairs(Tabs) do
                 v.Page.Visible = false
-                QuickTween(v.Btn, {BackgroundTransparency = 1})
-                QuickTween(v.Text, {TextColor3 = Library.Theme.SubText})
-                v.Grad.Enabled = false
+                QuickTween(v.Icon, {ImageColor3 = Library.Theme.SubText})
             end
             Page.Visible = true
             Page.GroupTransparency = 1
-            QuickTween(Page, {GroupTransparency = 0}, 0.5)
-            QuickTween(TabBtn, {BackgroundTransparency = 0.15})
-            QuickTween(TText, {TextColor3 = Library.Theme.Text})
-            BtnGrad.Enabled = true
+            QuickTween(Page, {GroupTransparency = 0})
+            QuickTween(Icon, {ImageColor3 = Library.Theme.Accent})
+            
+            -- Small "Pulse" effect on icon
+            Icon.Size = UDim2.new(0, 20, 0, 20)
+            QuickTween(Icon, {Size = UDim2.new(0, 24, 0, 24)})
         end
 
-        TabBtn.MouseEnter:Connect(function()
-            if not Page.Visible then QuickTween(TText, {TextColor3 = Library.Theme.Text}) end
-        end)
-        TabBtn.MouseLeave:Connect(function()
-            if not Page.Visible then QuickTween(TText, {TextColor3 = Library.Theme.SubText}) end
-        end)
         TabBtn.MouseButton1Click:Connect(Select)
-
-        table.insert(Tabs, {Btn = TabBtn, Page = Page, Text = TText, Grad = BtnGrad})
-        if firstTab then firstTab = false; Select() end
+        table.insert(Tabs, {Page = Page, Icon = Icon})
+        if first then first = false; Select() end
 
         return {
-            AddButton = function(_, text, callback)
-                local b = Instance.new("TextButton", Page)
-                b.Size = UDim2.new(1, 0, 0, 40)
-                b.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-                b.Text = text
-                b.Font = Enum.Font.GothamMedium
-                b.TextColor3 = Color3.new(1,1,1)
-                b.TextSize = 14
-                Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
-                Instance.new("UIStroke", b).Color = Library.Theme.Stroke
-                
-                b.MouseButton1Click:Connect(callback)
+            AddSection = function(_, title)
+                local Sec = Instance.new("TextLabel", Page)
+                Sec.Text = title:upper()
+                Sec.Size = UDim2.new(1, 0, 0, 30)
+                Sec.Font = Enum.Font.GothamBold
+                Sec.TextSize = 11
+                Sec.TextColor3 = Library.Theme.Accent
+                Sec.BackgroundTransparency = 1
+                Sec.TextXAlignment = Enum.TextXAlignment.Left
             end
         }
     end
